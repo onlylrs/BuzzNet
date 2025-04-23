@@ -1,38 +1,35 @@
 import { useState } from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import Hello from './Hello.jsx'
+
+import PostGrid from './components/PostGrid';
+import CreatePost from './components/CreatePost';
+import Header from './components/Header';
+import PostDetail from './components/PostDetail';
+import Login from './components/Login';
+import Register from './components/Register';
+import Profile from './components/Profile';
+import SearchPage from './components/SearchPage';
 
 function App() {
-  const [count, setCount] = useState(0)
-  
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-          <Hello />
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-      
-    </>
-  )
+
+    <Router>
+      <Header />
+      <Routes>
+        <Route path="/" element={<PostGrid />} />
+        <Route path="/create" element={<CreatePost />} />
+        <Route path="/posts/:id" element={<PostDetail />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/search" element={<SearchPage />} />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App
