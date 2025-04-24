@@ -13,7 +13,7 @@ export default function PostCard({ post }) {
 
       
     return (<Link to={`/posts/${post.id}`}>
-        <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between h-full">
+        <div className="bg-white overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between h-full">
             {/* 上半部分：图片或纯文字内容 */}
             {hasImage ? (
                 <img
@@ -35,7 +35,7 @@ export default function PostCard({ post }) {
                     {post.title || 'Untitled'}
                 </h2>
 
-                <div className="flex justify-between text-xs text-gray-500 pt-2 border-t">
+                <div className="flex justify-between text-xs text-gray-500 pt-1">
                     <span>❤️ {post.like_count}</span>
                     <span>💬 {post.comment_count}</span>
                     <span>{new Date(post.created_at).toLocaleDateString()}</span>

@@ -26,6 +26,12 @@ export default function SearchPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by title keyword..."
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSearch(e);
+            }
+        }}
         />
         <button className="bg-blue-500 text-black px-4 rounded hover:bg-blue-600">
           Search

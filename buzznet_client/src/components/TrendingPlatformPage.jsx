@@ -43,7 +43,7 @@ export default function TrendingPlatformPage() {
             <div className="mt-6 flex flex-col gap-4">
                 {platform === "youtube" ? (
                     // YouTube 样式（图文卡片）
-                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+                    <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
                         {items.map((item, index) => (
                             <a
                                 key={index}
@@ -56,7 +56,7 @@ export default function TrendingPlatformPage() {
                                     <img
                                         src={item.image}
                                         alt={item.title}
-                                        className="w-full h-48 object-cover"
+                                        className="w-full h-32 object-cover"
                                     />
                                 )}
                                 <div className="p-4 flex flex-col gap-2">

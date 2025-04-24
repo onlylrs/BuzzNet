@@ -21,11 +21,15 @@ export default function PostGrid() {
 
     return (
         <div className="min-h-screen px-4 py-6">
-            <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">
-                BuzzNet🐝
-            </h1>
+            <h2 className="text-center text-5xl font-thin text-indigo-500 mb-6">
+                {"Buzz Loud. Share Bold.".split("").map((child, idx) => (
+                    <span className="hoverText" key={idx}>
+                        {child}
+                    </span>
+                ))}
+            </h2>
 
-            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-4">
                 {posts.map((post) => (
                     <PostCard key={post.id} post={post} />
                 ))}

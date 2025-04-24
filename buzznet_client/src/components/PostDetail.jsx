@@ -107,7 +107,7 @@ export default function PostDetail() {
             {/* 标题 & 内容 */}
             <h1 className="text-3xl font-bold text-gray-900 mb-2">{post.title}</h1>
             {post.content && (
-                <p className="text-gray-800 text-base mb-4 leading-relaxed whitespace-pre-wrap">
+                <p className="text-gray-800 text-base mb-4 leading-relaxed whitespace-pre-wrap p-6">
                     {post.content}
                 </p>
             )}
@@ -139,15 +139,14 @@ export default function PostDetail() {
                     <p className="text-gray-500">No comments yet.</p>
                 ) : (
                     comments.map((c) => (
-                        <div key={c.id} className="mb-3 border-b pb-2">
-                            <p className="text-sm text-gray-800">{c.content}</p>
-                            <p className="text-xs text-gray-500">by @{c.username} at {c.created_at}</p>
+                        <div key={c.id} className="mb-4">
+                            <p className="text-sm text-gray-800 text-left pl-8">{c.content}</p>
+                            <p className="text-xs text-gray-400 text-left pl-8">by @{c.username} at {new Date(c.created_at).toLocaleString()}</p>
+                            <hr className="mt-2 border-gray-300" />
                         </div>
                     ))
                 )}
             </div>
-
-            {/* 评论表单 */}
             <form onSubmit={handleCommentSubmit} className="mt-4 flex flex-col gap-2">
                 <textarea
                     value={newComment}
@@ -155,6 +154,12 @@ export default function PostDetail() {
                     rows={3}
                     placeholder="Write a comment..."
                     className="w-full border px-3 py-2 rounded-md"
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleCommentSubmit(e);
+                        }
+                    }}
                 />
                 <button
                     type="submit"

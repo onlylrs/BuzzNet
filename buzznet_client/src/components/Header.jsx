@@ -11,19 +11,25 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white shadow-md w-full sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+    <header className="fixed top-0 left-0 w-full backdrop-blur-md bg-white/80 shadow-md z-50 border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
+        <Link
+          to="/"
+          className="text-2xl font-extrabold text-violet-600 flex items-center gap-2 tracking-tight"
+        >
           BuzzNet 🐝
         </Link>
 
-        <div className="flex gap-4 items-center text-sm">
+        <div className="flex gap-4 items-center text-sm font-medium">
           {user ? (
             <>
-              <Link to="/profile" className="text-blue-600 hover:underline">
-                👤{user.email}
+              <Link to="/profile" className="text-blue-600 hover:underline flex items-center gap-1">
+                👤 <span className="truncate max-w-[150px]">{user.email}</span>
               </Link>
-              <button onClick={handleLogout} className="text-red-500 hover:underline">
+              <button
+                onClick={handleLogout}
+                className="bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1 rounded-md transition"
+              >
                 Logout
               </button>
             </>

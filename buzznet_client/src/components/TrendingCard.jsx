@@ -46,7 +46,7 @@ export default function TrendingCard({ item }) {
           const post = data.reduce((max, item) => 
             item.heat > max.heat ? item : max, data[0]);
           setTitle(post?.title || "Hacker News Trending");
-          setImage(post?.image || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwI0VnVBlz6WCMOiqPxUaPvvSUM33EFfBYCA&s");
+          setImage(post?.image || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbLTb8taE7uno2irueFgHCUGq0gb0MvbrkRQ&s");
         })
         .catch((err) =>
           console.error("❌ Failed to fetch hackernews top post:", err)
@@ -60,7 +60,7 @@ export default function TrendingCard({ item }) {
 
   return (
     <Link to={`/trending/${platform.toLowerCase()}`}>
-      <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden border hover:border-blue-400">
+      <div className="bg-white rounded-xl shadow-xl hover:shadow-2xl transition overflow-hidden hover:scale-105 transition transform">
         {image && (
           <img src={image} alt={title} className="w-full h-48 object-cover" />
         )}

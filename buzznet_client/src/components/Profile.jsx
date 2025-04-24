@@ -42,7 +42,7 @@ export default function Profile() {
       <p className="text-sm text-gray-500 mb-4">Email: {user?.email}</p>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium">Change Username</label>
+        <label className="block text-xs font-medium">Change Username</label>
         <input
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -58,7 +58,7 @@ export default function Profile() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium">Change Password</label>
+        <label className="block text-xs font-medium">Change Password</label>
         <input
           type="password"
           value={newPassword}
