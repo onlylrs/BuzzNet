@@ -13,6 +13,8 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Profile from './components/Profile';
 import SearchPage from './components/SearchPage';
+import HomePage from './components/HomePage';
+import TrendingPlatformPage from './components/TrendingPlatformPage';
 
 function App() {
   return (
@@ -20,13 +22,14 @@ function App() {
     <Router>
       <Header />
       <Routes>
-        <Route path="/" element={<PostGrid />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/create" element={<CreatePost />} />
         <Route path="/posts/:id" element={<PostDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/trending/:platform" element={<TrendingPlatformPage />} />
       </Routes>
     </Router>
   );

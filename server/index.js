@@ -1,6 +1,11 @@
 import express from 'express'
 import pg from 'pg';
 import cors from 'cors'
+import fetch from 'node-fetch';
+import dotenv from 'dotenv';
+import Parser from 'rss-parser';
+
+dotenv.config();
 
 const app = express()
 const port = 3000
@@ -24,7 +29,7 @@ app.get('/api/hello', (req, res) => {
 
 // 1. Get all posts (with number of likes, number of comments, username)
 app.get('/api/posts', async (req, res) => {
-  try{
+  try {
     const sql = `
       SELECT 
         posts.id, posts.content, posts.title, posts.image_url, posts.created_at, 
@@ -36,18 +41,19 @@ app.get('/api/posts', async (req, res) => {
       LEFT JOIN comments ON posts.id = comments.post_id
       LEFT JOIN likes ON posts.id = likes.post_id
       GROUP BY posts.id, users.username
-      ORDER BY like_count DESC, comment_count DESC, posts.created_at DESC;
+      ORDER BY like_count DESC, comment_count DESC, posts.created_at DESC
+      LIMIT 50;
     `
     const result = await pool.query(sql)
     res.json(result.rows)
-  }catch(error){
+  } catch (error) {
     console.log(error);
     res.status(500).send('Error retrieving posts');
   }
 })
 
 // 2. Create new post
-app.post('/api/posts', async (req, res) =>{
+app.post('/api/posts', async (req, res) => {
   const { user_id, title, content, image_url } = req.body
   try {
     const sql = `
@@ -57,7 +63,7 @@ app.post('/api/posts', async (req, res) =>{
     const values = [user_id, title, content, image_url]
     const result = await pool.query(sql, values)
     res.status(201).json(result.rows[0]);
-  }catch(error){
+  } catch (error) {
     console.log(error)
     res.status(500).send('Error creating post');
   }
@@ -69,7 +75,7 @@ app.post('/api/posts/:id/like', async (req, res) => {
   const { user_id } = req.body
   console.log('🔁 Like Request:', { postId, user_id });
 
-  try{
+  try {
     const sql = `
       INSERT INTO likes (user_id, post_id)
       VALUES ($1, $2)
@@ -80,7 +86,7 @@ app.post('/api/posts/:id/like', async (req, res) => {
     const result = await pool.query(sql, values)
     res.status(201).send("Liked!")
 
-  }catch(error){
+  } catch (error) {
     console.log(error)
     res.status(500).send('Error liking post')
   }
@@ -91,7 +97,7 @@ app.post('/api/posts/:id/comment', async (req, res) => {
   const postId = req.params.id
   const { user_id, content } = req.body
   console.log("📨 Incoming comment:", { postId, user_id, content });
-  try{
+  try {
     const sql = `
       INSERT INTO comments (user_id, post_id, content)
       VALUES ($1, $2, $3)
@@ -100,7 +106,7 @@ app.post('/api/posts/:id/comment', async (req, res) => {
     const values = [user_id, postId, content]
     const result = await pool.query(sql, values)
     res.status(201).json(result.rows[0])
-  }catch(error){
+  } catch (error) {
     console.log(error)
     res.status(500).send('Error commenting on post')
   }
@@ -110,7 +116,7 @@ app.post('/api/posts/:id/comment', async (req, res) => {
 app.get('/api/posts/:id', async (req, res) => {
   const postId = req.params.id
 
-  try{
+  try {
     const sql_for_post = `
       SELECT posts.*, users.username
       FROM posts JOIN users ON posts.user_id = users.id
@@ -141,7 +147,7 @@ app.get('/api/posts/:id', async (req, res) => {
       comments: commentsRes.rows,
       like_count: likesRes.rows[0].like_count,
     })
-  }catch(error){
+  } catch (error) {
     console.log(error)
     res.status(500).send('Error retrieving post')
   }
@@ -262,6 +268,157 @@ app.get('/api/search', async (req, res) => {
     res.status(500).send("Search failed");
   }
 });
+
+// 12. Get Reddit
+let redditAccessToken = null;
+let redditTokenExpiresAt = 0;
+async function getRedditToken() {
+  const credentials = `${process.env.REDDIT_CLIENT_ID}:${process.env.REDDIT_CLIENT_SECRET}`;
+  const encoded = Buffer.from(credentials).toString('base64');
+
+  const res = await fetch('https://www.reddit.com/api/v1/access_token', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${encoded}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'User-Agent': 'BuzzNetApp/1.0 by Embarrassed_While765',
+    },
+    body: 'grant_type=client_credentials',
+  });
+
+  const json = await res.json();
+  redditAccessToken = json.access_token;
+  redditTokenExpiresAt = Date.now() + json.expires_in * 1000 - 60000; // 提前1分钟过期
+  return redditAccessToken;
+}
+app.get('/api/reddit', async (req, res) => {
+  const subreddit = req.query.sub || "popular";
+
+  try {
+    if (!redditAccessToken || Date.now() >= redditTokenExpiresAt) {
+      await getRedditToken();
+    }
+
+    const url = `https://oauth.reddit.com/r/${subreddit}`;
+    const redditRes = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${redditAccessToken}`,
+        'User-Agent': 'BuzzNetApp/1.0 by Embarrassed_While765',
+      }
+    });
+
+    if (!redditRes.ok) {
+      const text = await redditRes.text();
+      console.error(`❌ Reddit API returned ${redditRes.status}:`, text.slice(0, 200));
+      return res.status(redditRes.status).send("Reddit API error");
+    }
+
+    const data = await redditRes.json();
+    const posts = data.data.children.map(child => child.data);
+
+    const topPost = posts.reduce((prev, curr) => {
+      return curr.score > prev.score ? curr : prev;
+    }, posts[0]);
+
+    res.json({ topPost, posts }); // 🔥 返回 topPost 方便首页使用
+  } catch (err) {
+    console.error("🔥 Reddit OAuth fetch failed:", err);
+    res.status(500).send("Reddit OAuth fetch error");
+  }
+});
+
+
+// 13. Get YouTube
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
+let cachedYouTube = null;
+let cachedAtYouTube = 0;
+
+app.get("/api/youtube", async (req, res) => {
+  const now = Date.now();
+  if (cachedYouTube && now - cachedAtYouTube < 60000) {
+    return res.json(cachedYouTube);
+  }
+
+  const region = req.query.region || "US"; // 可以切换为 "CN"
+  const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=${region}&maxResults=30&key=${YOUTUBE_API_KEY}`;
+
+  try {
+    const ytRes = await fetch(url);
+    const data = await ytRes.json();
+
+    const videos = data.items.map((item) => ({
+      title: item.snippet.title,
+      channel: item.snippet.channelTitle,
+      url: `https://www.youtube.com/watch?v=${item.id}`,
+      image: item.snippet.thumbnails?.high?.url || "",
+      views: item.statistics?.viewCount || "0",
+    }));
+
+    cachedYouTube = { videos };
+    cachedAtYouTube = Date.now();
+    res.json({ videos });
+  } catch (err) {
+    console.error("❌ YouTube fetch error:", err);
+    res.status(500).send("Failed to fetch YouTube trending");
+  }
+});
+
+
+// 14. Get Hacker News Trending
+app.get("/api/hackernews", async (req, res) => {
+  try {
+    const topIdsRes = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json");
+    const topIds = await topIdsRes.json();
+
+    const topItems = await Promise.all(
+      topIds.slice(0, 20).map(async (id) => {
+        const itemRes = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
+        const item = await itemRes.json();
+        return {
+          title: item.title,
+          url: item.url || `https://news.ycombinator.com/item?id=${item.id}`,
+          heat: item.score,
+          subtitle: `by ${item.by}`,
+        };
+      })
+    );
+
+    res.json(topItems);
+  } catch (err) {
+    console.error("❌ Hacker News fetch failed:", err);
+    res.status(500).send("Hacker News fetch error");
+  }
+});
+
+// 15. Google Trends 热搜词接口
+const parser = new Parser({
+  customFields: {
+    item: [
+      ['ht:approx_traffic', 'approx_traffic'],
+      ['ht:picture', 'picture'],
+      ['ht:news_item', 'newsItems'], // 可以忽略解析子项，后期需要再处理
+    ]
+  }
+});
+
+app.get("/api/googletrends", async (req, res) => {
+  try {
+    const feed = await parser.parseURL("https://trends.google.com/trending/rss?geo=US");
+    const trends = feed.items.map(item => ({
+      title: item.title,
+      heat: item.approx_traffic || "10K+",
+      url: item.link || `https://www.google.com/search?q=${encodeURIComponent(item.title)}`,
+      image: item.picture || "", // Google提供的小图
+    }));
+
+    res.json(trends);
+  } catch (err) {
+    console.error("❌ Google Trends RSS error:", err);
+    res.status(500).send("Google Trends RSS fetch failed");
+  }
+});
+
+
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
