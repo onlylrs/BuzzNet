@@ -38,7 +38,7 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button className="bg-green-500 text-white py-2 rounded hover:bg-green-600">
+        <button className="bg-green-500 text-black py-2 rounded hover:bg-green-600">
           Login
         </button>
       </form>

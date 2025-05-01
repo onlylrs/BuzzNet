@@ -59,7 +59,7 @@ export default function Register() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                 />
-                <button className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
+                <button className="bg-blue-500 text-black py-2 rounded hover:bg-blue-600">
                     Register
                 </button>
             </form>

@@ -7,7 +7,7 @@ export default function CreatePost() {
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [preview, setPreview] = useState("");
-  const maxTitleLength = 40;
+  const maxTitleLength = 100;
   const navigate = useNavigate(); // 跳转 hook
 
   const user = useAuth(); // 登录用户
@@ -111,7 +111,7 @@ export default function CreatePost() {
         {/* Submit Button */}
         <button
           type="submit"
-          className="bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md font-semibold"
+          className="bg-blue-500 hover:bg-blue-600 text-black py-2 rounded-md font-semibold"
         >
           Publish ✨
         </button>

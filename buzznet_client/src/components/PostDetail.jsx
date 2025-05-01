@@ -47,7 +47,9 @@ export default function PostDetail() {
         }
     };
 
+    
 
+    
     const handleCommentSubmit = async (e) => {
         e.preventDefault();
         if (!user_id) return alert("Login first!");
